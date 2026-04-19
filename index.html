@@ -246,7 +246,7 @@ const PW_KEY = 'shopping_auth_v1';
 function checkPw() {
   const val = document.getElementById('pw-input').value;
   if (val === PASSWORD) {
-    localStorage.setItem(PW_KEY, PASSWORD);
+    sessionStorage.setItem(PW_KEY, '1');
     document.getElementById('lock-screen').style.display = 'none';
     document.getElementById('pw-error').textContent = '';
   } else {
@@ -256,8 +256,8 @@ function checkPw() {
   }
 }
 
-// 저장된 인증값이 현재 비밀번호와 같을 때만 통과
-if (localStorage.getItem(PW_KEY) === PASSWORD) {
+// 이미 인증된 경우 바로 통과
+if (sessionStorage.getItem(PW_KEY) === '1') {
   document.getElementById('lock-screen').style.display = 'none';
 }
 
