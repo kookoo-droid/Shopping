@@ -4,218 +4,157 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>생필품 현황판</title>
-
-  <!-- PWA 설정 -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="생필품" />
   <meta name="theme-color" content="#f2f2f7" />
-
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, 'Noto Sans KR', sans-serif;
-      background: #f2f2f7;
-      min-height: 100vh;
-      -webkit-font-smoothing: antialiased;
-    }
+    body { font-family: -apple-system, 'Noto Sans KR', sans-serif; background: #f2f2f7; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+    input, button { font-family: -apple-system, 'Noto Sans KR', sans-serif; }
     input::placeholder { color: #c7c7cc; }
-    input { font-family: -apple-system, 'Noto Sans KR', sans-serif; }
-    button { font-family: -apple-system, 'Noto Sans KR', sans-serif; }
 
     /* 토스트 */
-    #toast {
-      position: fixed; top: 56px; left: 50%; transform: translateX(-50%);
-      background: rgba(0,0,0,0.72); color: #fff;
-      padding: 8px 18px; border-radius: 20px; font-size: 13px; font-weight: 500;
-      z-index: 9999; white-space: nowrap; backdrop-filter: blur(10px);
-      display: none; pointer-events: none;
-    }
+    #toast { position: fixed; top: 56px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.72); color: #fff; padding: 8px 18px; border-radius: 20px; font-size: 13px; font-weight: 500; z-index: 9999; white-space: nowrap; backdrop-filter: blur(10px); display: none; pointer-events: none; }
 
     /* 헤더 */
-    #header {
-      background: rgba(255,255,255,0.9);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-bottom: 1px solid #e5e5ea;
-      padding: env(safe-area-inset-top, 52px) 20px 14px;
-      padding-top: max(env(safe-area-inset-top), 52px);
-      position: sticky; top: 0; z-index: 100;
-    }
-    #header-inner {
-      max-width: 480px; margin: 0 auto;
-      display: flex; justify-content: space-between; align-items: flex-end;
-    }
+    #header { background: rgba(255,255,255,0.9); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid #e5e5ea; padding-top: max(env(safe-area-inset-top), 52px); padding-bottom: 14px; position: sticky; top: 0; z-index: 100; }
+    #header-inner { max-width: 960px; margin: 0 auto; padding: 0 20px; display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
     #header h1 { font-size: 26px; font-weight: 700; color: #1c1c1e; letter-spacing: -0.5px; }
     #header-date { font-size: 12px; color: #8e8e93; margin-top: 3px; }
+    .header-right { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end; flex-shrink: 0; }
     .chips { display: flex; gap: 6px; }
     #chip-buy  { font-size: 12px; font-weight: 600; color: #ff9500; background: rgba(255,149,0,0.1); border-radius: 10px; padding: 3px 10px; }
     #chip-done { font-size: 12px; font-weight: 600; color: #34c759; background: rgba(52,199,89,0.1); border-radius: 10px; padding: 3px 10px; }
+    .hdr-btn { background: #f2f2f7; border: none; border-radius: 10px; color: #8e8e93; font-size: 12px; font-weight: 600; padding: 5px 12px; cursor: pointer; white-space: nowrap; }
+    .hdr-btn:hover { background: #e5e5ea; }
+    .hdr-btn.on { background: #1c1c1e; color: #fff; }
+    #multi-actions { display: none; align-items: center; gap: 6px; }
+    #multi-actions.visible { display: flex; }
+    #selected-count { font-size: 12px; color: #8e8e93; white-space: nowrap; }
+    .multi-del-btn { background: #ff3b30; border: none; border-radius: 10px; color: #fff; font-size: 12px; font-weight: 600; padding: 5px 12px; cursor: pointer; white-space: nowrap; }
+    .multi-move-btn { background: #1c1c1e; border: none; border-radius: 10px; color: #fff; font-size: 12px; font-weight: 600; padding: 5px 12px; cursor: pointer; white-space: nowrap; }
 
     /* 본문 */
-    #content { max-width: 480px; margin: 0 auto; padding: 20px 16px 100px; }
+    #content { max-width: 960px; margin: 0 auto; padding: 20px 16px 100px; }
+    @media (min-width: 700px) {
+      #content { padding: 28px 24px 60px; }
+      #fab { bottom: 32px; right: 32px; }
+      #add-sheet { top: 50%; left: 50%; bottom: auto; right: auto; transform: translate(-50%,-50%); width: 420px; border-radius: 20px; padding: 28px 28px 32px; }
+      .sheet-handle { display: none; }
+      /* 4컬럼 그리드 */
+      .section-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+      .section-grid .section-wrap { margin-bottom: 0; }
+      .section-col { margin-bottom: 32px; }
+      /* 섹션 구분선 */
+      #section-divider { border: none; border-top: 1px solid #e5e5ea; margin: 4px 0 28px; }
+    }
 
     /* 섹션 */
+    .section-col { margin-bottom: 28px; }
     .section-label { font-size: 13px; font-weight: 600; color: #8e8e93; margin-bottom: 8px; padding-left: 4px; }
-    .section-label span { }
-    .section-wrap { background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.06); margin-bottom: 28px; }
+    .section-wrap { background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
     .empty { padding: 16px; color: #c7c7cc; font-size: 14px; }
 
-    /* 아이템 행 */
-    .item-row { border-bottom: 1px solid #f2f2f7; }
+    /* 아이템 */
+    .item-row { border-bottom: 1px solid #f2f2f7; transition: background 0.15s; }
     .item-row:last-child { border-bottom: none; }
-    .item-main { display: flex; align-items: center; gap: 12px; padding: 13px 16px; }
+    .item-row.selected { background: #f0f0f5; }
+    .item-row.dragging { opacity: 0.4; }
+    .item-row.drag-over { border-top: 2px solid #1c1c1e; }
+    .item-main { display: flex; align-items: center; gap: 10px; padding: 13px 16px; }
+
+    /* 체크박스 */
+    .select-cb { display: none; width: 22px; height: 22px; flex-shrink: 0; border-radius: 50%; border: 2px solid #d1d1d6; background: #fff; cursor: pointer; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; }
+    .select-cb.checked { background: #1c1c1e; border-color: #1c1c1e; }
+    body.select-mode .select-cb { display: flex; }
+
     .item-name { flex: 1; font-size: 16px; font-weight: 500; color: #1c1c1e; transition: all 0.2s; }
     .item-name.done { color: #aeaeb2; text-decoration: line-through; }
-    .link-btn {
-      font-size: 12px; color: #1c1c1e; font-weight: 500;
-      background: #f2f2f7; border-radius: 8px; padding: 4px 10px;
-      text-decoration: none; border: none; cursor: pointer; white-space: nowrap;
-    }
-    .link-add-btn {
-      font-size: 12px; color: #8e8e93; background: transparent;
-      border: 1px solid #e5e5ea; border-radius: 8px; padding: 4px 10px;
-      cursor: pointer; white-space: nowrap;
-    }
-    .log-toggle-btn {
-      background: transparent; border: none; color: #c7c7cc;
-      font-size: 12px; cursor: pointer; padding: 0 2px;
-    }
-    .del-btn {
-      background: transparent; border: none; color: #c7c7cc;
-      font-size: 20px; cursor: pointer; line-height: 1; padding: 0 2px;
-    }
-    .link-edit-row { padding: 0 16px 10px 79px; }
+    .drag-handle { color: #d1d1d6; font-size: 16px; cursor: grab; padding: 0 2px; flex-shrink: 0; user-select: none; touch-action: none; }
+    .drag-handle:active { cursor: grabbing; }
+    .link-btn { font-size: 12px; color: #1c1c1e; font-weight: 500; background: #f2f2f7; border-radius: 8px; padding: 4px 10px; text-decoration: none; border: none; cursor: pointer; white-space: nowrap; }
+    .link-add-btn { font-size: 12px; color: #8e8e93; background: transparent; border: 1px solid #e5e5ea; border-radius: 8px; padding: 4px 10px; cursor: pointer; white-space: nowrap; }
+    .log-toggle-btn { background: transparent; border: none; color: #c7c7cc; font-size: 12px; cursor: pointer; padding: 0 2px; }
+    .del-btn { background: transparent; border: none; color: #c7c7cc; font-size: 20px; cursor: pointer; line-height: 1; padding: 0 2px; }
+    .link-edit-row { padding: 0 16px 10px 60px; }
     .link-edit-small { background: transparent; border: none; color: #8e8e93; font-size: 12px; cursor: pointer; padding: 0; }
     .link-input-row { padding: 0 16px 12px; display: flex; gap: 8px; }
 
-    /* 토글 스위치 */
-    .toggle {
-      position: relative; width: 51px; height: 31px; border-radius: 16px;
-      border: none; cursor: pointer; padding: 0; flex-shrink: 0;
-      transition: background 0.25s;
-    }
-    .toggle-thumb {
-      position: absolute; top: 3px;
-      width: 25px; height: 25px; border-radius: 50%;
-      background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-      transition: left 0.25s;
-      pointer-events: none;
-    }
+    /* 토글 */
+    .toggle { position: relative; width: 51px; height: 31px; border-radius: 16px; border: none; cursor: pointer; padding: 0; flex-shrink: 0; transition: background 0.25s; }
+    .toggle-thumb { position: absolute; top: 3px; width: 25px; height: 25px; border-radius: 50%; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.2); transition: left 0.25s; pointer-events: none; }
+
+    /* 이름 편집 */
+    .name-edit-input { flex: 1; background: #f2f2f7; border: none; border-radius: 8px; padding: 6px 10px; font-size: 16px; font-weight: 500; color: #1c1c1e; outline: none; }
+    .name-save-btn { background: #1c1c1e; border: none; border-radius: 8px; color: #fff; padding: 6px 12px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+    .name-cancel-btn { background: #f2f2f7; border: none; border-radius: 8px; color: #8e8e93; padding: 6px 12px; font-size: 13px; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
 
     /* 로그 */
     .log-section { background: #f9f9fb; border-top: 1px solid #f2f2f7; padding: 12px 16px; }
-    .log-title { font-size: 12px; color: #8e8e93; font-weight: 600; margin-bottom: 8px; }
+    .log-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .log-title { font-size: 12px; color: #8e8e93; font-weight: 600; }
+    .log-clear-btn { font-size: 11px; color: #ff3b30; background: transparent; border: none; cursor: pointer; padding: 0; }
     .log-row { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 13px; }
 
-    /* 인풋 */
-    .inp {
-      width: 100%; background: #f2f2f7; border: none; border-radius: 10px;
-      padding: 11px 14px; color: #1c1c1e; font-size: 16px; outline: none;
-    }
-    .inp-sm {
-      flex: 1; background: #f2f2f7; border: none; border-radius: 10px;
-      padding: 8px 12px; color: #1c1c1e; font-size: 14px; outline: none;
-    }
-    .btn-black {
-      flex: 1; background: #1c1c1e; border: none; border-radius: 12px;
-      color: #fff; padding: 13px; font-size: 15px; font-weight: 600; cursor: pointer;
-    }
-    .btn-gray {
-      flex: 1; background: #f2f2f7; border: none; border-radius: 12px;
-      color: #1c1c1e; padding: 13px; font-size: 15px; cursor: pointer;
-    }
-    .btn-sm-black {
-      background: #1c1c1e; border: none; border-radius: 10px;
-      color: #fff; padding: 8px 14px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap;
-    }
-    .btn-sm-gray {
-      background: #f2f2f7; border: none; border-radius: 10px;
-      color: #1c1c1e; padding: 8px 14px; font-size: 13px; cursor: pointer; white-space: nowrap;
-    }
+    /* 인풋/버튼 */
+    .inp { width: 100%; background: #f2f2f7; border: none; border-radius: 10px; padding: 11px 14px; color: #1c1c1e; font-size: 16px; outline: none; }
+    .inp-sm { flex: 1; background: #f2f2f7; border: none; border-radius: 10px; padding: 8px 12px; color: #1c1c1e; font-size: 14px; outline: none; }
+    .btn-black { flex: 1; background: #1c1c1e; border: none; border-radius: 12px; color: #fff; padding: 13px; font-size: 15px; font-weight: 600; cursor: pointer; }
+    .btn-gray  { flex: 1; background: #f2f2f7; border: none; border-radius: 12px; color: #1c1c1e; padding: 13px; font-size: 15px; cursor: pointer; }
+    .btn-sm-black { background: #1c1c1e; border: none; border-radius: 10px; color: #fff; padding: 8px 14px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+    .btn-sm-gray  { background: #f2f2f7; border: none; border-radius: 10px; color: #1c1c1e; padding: 8px 14px; font-size: 13px; cursor: pointer; white-space: nowrap; }
 
     /* 바텀 시트 */
     #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.25); z-index: 200; backdrop-filter: blur(4px); display: none; }
-    #add-sheet {
-      position: fixed; bottom: 0; left: 0; right: 0;
-      background: #fff; border-radius: 20px 20px 0 0;
-      padding: 16px 20px 40px; z-index: 201;
-      box-shadow: 0 -2px 20px rgba(0,0,0,0.1);
-      display: none;
-    }
+    #add-sheet { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-radius: 20px 20px 0 0; padding: 16px 20px 40px; z-index: 201; box-shadow: 0 -2px 20px rgba(0,0,0,0.1); display: none; }
     #add-sheet-inner { max-width: 480px; margin: 0 auto; }
     .sheet-handle { width: 36px; height: 4px; background: #d1d1d6; border-radius: 2px; margin: 0 auto 18px; }
     .sheet-title { font-size: 17px; font-weight: 600; color: #1c1c1e; margin-bottom: 14px; }
     .btn-row { display: flex; gap: 10px; margin-top: 14px; }
 
     /* FAB */
-    #fab {
-      position: fixed; bottom: 30px; right: 24px;
-      width: 54px; height: 54px; border-radius: 50%;
-      background: #1c1c1e; border: none; color: #fff;
-      font-size: 28px; cursor: pointer;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.2);
-      display: flex; align-items: center; justify-content: center;
-      z-index: 150;
-    }
+    #fab { position: fixed; bottom: 30px; right: 24px; width: 54px; height: 54px; border-radius: 50%; background: #1c1c1e; border: none; color: #fff; font-size: 28px; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; z-index: 150; }
+
+    /* 이동 모달 */
+    #move-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 300; backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; }
+    #move-modal.visible { display: flex; }
+    #move-modal-box { background: #fff; border-radius: 18px; padding: 24px 20px; width: 300px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); }
+    #move-modal-box h3 { font-size: 17px; font-weight: 600; color: #1c1c1e; margin-bottom: 6px; }
+    #move-modal-box p { font-size: 13px; color: #8e8e93; margin-bottom: 16px; }
+    .move-choice { width: 100%; background: #f2f2f7; border: none; border-radius: 12px; padding: 13px 16px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 8px; text-align: left; display: block; }
+    .move-choice.buy { color: #ff9500; }
+    .move-choice.done { color: #34c759; }
+    .move-cancel { width: 100%; background: transparent; border: none; color: #8e8e93; font-size: 14px; cursor: pointer; padding: 8px; margin-top: 4px; display: block; }
 
     /* 잠금 화면 */
-    #lock-screen {
-      position: fixed; inset: 0; background: #f2f2f7;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      z-index: 9000; padding: 40px 32px;
-    }
-    #lock-screen h2 { font-size: 22px; font-weight: 700; color: #1c1c1e; margin-bottom: 6px; letter-spacing: -0.3px; }
+    #lock-screen { position: fixed; inset: 0; background: #f2f2f7; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9000; padding: 40px 32px; }
+    #lock-screen h2 { font-size: 22px; font-weight: 700; color: #1c1c1e; margin-bottom: 6px; }
     #lock-screen p { font-size: 14px; color: #8e8e93; margin-bottom: 32px; }
-    #pw-input {
-      width: 100%; max-width: 300px;
-      background: #fff; border: 1.5px solid #e5e5ea;
-      border-radius: 12px; padding: 13px 16px;
-      font-size: 17px; color: #1c1c1e; outline: none;
-      text-align: center; letter-spacing: 4px; margin-bottom: 12px;
-    }
+    #pw-input { width: 100%; max-width: 300px; background: #fff; border: 1.5px solid #e5e5ea; border-radius: 12px; padding: 13px 16px; font-size: 17px; color: #1c1c1e; outline: none; text-align: center; letter-spacing: 4px; margin-bottom: 12px; }
     #pw-input:focus { border-color: #1c1c1e; }
-    #pw-btn {
-      width: 100%; max-width: 300px;
-      background: #1c1c1e; border: none; border-radius: 12px;
-      color: #fff; padding: 14px; font-size: 16px; font-weight: 600; cursor: pointer;
-    }
+    #pw-btn { width: 100%; max-width: 300px; background: #1c1c1e; border: none; border-radius: 12px; color: #fff; padding: 14px; font-size: 16px; font-weight: 600; cursor: pointer; }
     #pw-error { font-size: 13px; color: #ff3b30; margin-top: 10px; min-height: 18px; text-align: center; }
 
-    /* 이름 편집 */
-    .name-edit-input {
-      flex: 1; background: #f2f2f7; border: none; border-radius: 8px;
-      padding: 6px 10px; font-size: 16px; font-weight: 500;
-      color: #1c1c1e; outline: none; font-family: -apple-system, 'Noto Sans KR', sans-serif;
+    /* 카드 그리드 아이템 */
+    .card-name { font-size: 15px; font-weight: 600; color: #1c1c1e; margin-bottom: 2px; word-break: break-all; }
+    .card-name.done { color: #aeaeb2; text-decoration: line-through; }
+    @media (max-width: 699px) {
+      .section-grid { display: none !important; }
+      #section-divider { display: none; }
     }
-    .name-save-btn {
-      background: #1c1c1e; border: none; border-radius: 8px;
-      color: #fff; padding: 6px 12px; font-size: 13px; font-weight: 600;
-      cursor: pointer; white-space: nowrap; flex-shrink: 0;
+    @media (min-width: 700px) {
+      .section-wrap-mobile { display: none !important; }
     }
-    .name-cancel-btn {
-      background: #f2f2f7; border: none; border-radius: 8px;
-      color: #8e8e93; padding: 6px 12px; font-size: 13px;
-      cursor: pointer; white-space: nowrap; flex-shrink: 0;
-    }
-
-    /* 드래그 핸들 */
-    .drag-handle {
-      color: #d1d1d6; font-size: 16px; cursor: grab;
-      padding: 0 2px; flex-shrink: 0; user-select: none;
-      touch-action: none;
-    }
-    .drag-handle:active { cursor: grabbing; }
-    .item-row.dragging { opacity: 0.4; }
-    .item-row.drag-over { border-top: 2px solid #1c1c1e; }
   </style>
 </head>
 <body>
 
+<div id="toast"></div>
 
+<!-- 잠금 화면 -->
 <div id="lock-screen">
   <h2>생필품 현황판</h2>
   <p>비밀번호를 입력하세요</p>
@@ -225,27 +164,48 @@
   <div id="pw-error"></div>
 </div>
 
-<div id="toast"></div>
-
+<!-- 헤더 -->
 <div id="header">
   <div id="header-inner">
     <div>
       <h1>생필품 현황판</h1>
       <div id="header-date"></div>
     </div>
-    <div class="chips">
-      <span id="chip-buy">구매요 0</span>
-      <span id="chip-done">구매완 0</span>
+    <div class="header-right">
+      <div id="multi-actions">
+        <span id="selected-count">0개 선택</span>
+        <button class="multi-move-btn" onclick="moveSelectedUp()" title="위로">↑</button>
+        <button class="multi-move-btn" onclick="moveSelectedDown()" title="아래로">↓</button>
+        <button class="multi-move-btn" onclick="openMoveModal()">상태이동</button>
+        <button class="multi-del-btn" onclick="deleteSelected()">삭제</button>
+      </div>
+      <button class="hdr-btn" onclick="confirmResetAllLogs()">이력 초기화</button>
+      <button class="hdr-btn" id="select-btn" onclick="toggleSelectMode()">선택</button>
+      <div class="chips">
+        <span id="chip-buy">구매요 0</span>
+        <span id="chip-done">구매완 0</span>
+      </div>
     </div>
   </div>
 </div>
 
+<!-- 본문 -->
 <div id="content">
-  <div class="section-label"><span style="color:#ff9500">구매요</span> <span id="count-buy">0</span>개</div>
-  <div class="section-wrap" id="list-buy"></div>
+  <!-- 구매요 섹션 -->
+  <div class="section-col" id="section-buy">
+    <div class="section-label"><span style="color:#ff9500">구매요</span> <span id="count-buy">0</span>개</div>
+    <div class="section-grid" id="list-buy-grid"></div>
+    <div id="list-buy" style="display:none"></div>
+  </div>
 
-  <div class="section-label"><span style="color:#34c759">구매완</span> <span id="count-done">0</span>개</div>
-  <div class="section-wrap" id="list-done"></div>
+  <hr id="section-divider" style="border:none;border-top:1px solid #e5e5ea;margin:0 0 28px;" />
+
+  <!-- 구매완 섹션 -->
+  <div class="section-col" id="section-done">
+    <div class="section-label"><span style="color:#34c759">구매완</span> <span id="count-done">0</span>개</div>
+    <div class="section-grid" id="list-done-grid"></div>
+    <div id="list-done" style="display:none"></div>
+  </div>
 </div>
 
 <div id="overlay" onclick="closeSheet()"></div>
@@ -264,100 +224,94 @@
 
 <button id="fab" onclick="openSheet()">+</button>
 
-<script>
+<!-- 이동 모달 -->
+<div id="move-modal">
+  <div id="move-modal-box">
+    <h3>선택 항목 이동</h3>
+    <p id="move-modal-desc">어디로 이동할까요?</p>
+    <button class="move-choice buy"  onclick="moveSelected('구매요')">구매요로 이동</button>
+    <button class="move-choice done" onclick="moveSelected('구매완')">구매완으로 이동</button>
+    <button class="move-cancel" onclick="closeMoveModal()">취소</button>
+  </div>
+</div>
 
-// 비밀번호
+<script>
+// ── 비밀번호 ──
 const PASSWORD = '8348'; // ← 여기서 비밀번호 변경
 const PW_KEY = 'shopping_auth_v1';
 
 function checkPw() {
   const val = document.getElementById('pw-input').value;
   if (val === PASSWORD) {
-    sessionStorage.setItem(PW_KEY, '1');
+    sessionStorage.setItem(PW_KEY, PASSWORD);
     document.getElementById('lock-screen').style.display = 'none';
-    document.getElementById('pw-error').textContent = '';
   } else {
     document.getElementById('pw-error').textContent = '비밀번호가 틀렸어요';
     document.getElementById('pw-input').value = '';
     document.getElementById('pw-input').focus();
   }
 }
-
-// 이미 인증된 경우 바로 통과
-if (sessionStorage.getItem(PW_KEY) === '1') {
+if (sessionStorage.getItem(PW_KEY) === PASSWORD) {
   document.getElementById('lock-screen').style.display = 'none';
 }
 
+// ── 데이터 ──
 const STORAGE_KEY = 'shopping_items_v2';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbytCE0IL6jL425_u_RpFquvsgVz-fzdPMHftvBrwU6hI1lXTA6Erz7DO_MXz5rtqz82OA/exec';
 
 function fmt(d = new Date()) {
-  return d.toLocaleString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+  return d.toLocaleString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
 }
-
 function loadItems() {
-  try {
-    const s = localStorage.getItem(STORAGE_KEY);
-    if (s) return JSON.parse(s);
-  } catch {}
+  try { const s = localStorage.getItem(STORAGE_KEY); if (s) return JSON.parse(s); } catch {}
   return [
-    { id: 1, name: '샴푸', link: '', status: '구매요', logs: [{ status: '구매요', date: fmt() }] },
-    { id: 2, name: '세제', link: '', status: '구매완', logs: [{ status: '구매완', date: fmt() }] },
-    { id: 3, name: '치약', link: '', status: '구매요', logs: [{ status: '구매요', date: fmt() }] },
+    { id:1, name:'샴푸', link:'', status:'구매요', logs:[{ status:'구매요', date:fmt() }] },
+    { id:2, name:'세제', link:'', status:'구매완', logs:[{ status:'구매완', date:fmt() }] },
+    { id:3, name:'치약', link:'', status:'구매요', logs:[{ status:'구매요', date:fmt() }] },
   ];
 }
 
-let items = loadItems();
+let items       = loadItems();
 let expandedLog = null;
 let editingLink = null;
 let editingName = null;
-let dragSrcId = null;
-
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbytCE0IL6jL425_u_RpFquvsgVz-fzdPMHftvBrwU6hI1lXTA6Erz7DO_MXz5rtqz82OA/exec';
+let dragSrcId   = null;
+let selectMode  = false;
+let selected    = new Set();
 
 function save() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); } catch {}
   syncToSheet();
 }
-
 async function syncToSheet() {
-  try {
-    await fetch(GAS_URL, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'set', data: JSON.stringify(items) }),
-    });
-  } catch(e) {}
+  try { await fetch(GAS_URL, { method:'POST', body: JSON.stringify({ action:'set', data: JSON.stringify(items) }) }); } catch(e) {}
 }
-
 async function loadFromSheet() {
+  showToast('데이터 불러오는 중...');
   try {
     const res = await fetch(GAS_URL + '?action=get');
     const text = await res.text();
-    if (text && text !== '[]') {
+    if (text && text.startsWith('[')) {
       const remote = JSON.parse(text);
-      if (remote.length > 0) {
-        items = remote;
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-      }
+      if (remote.length > 0) { items = remote; localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); }
     }
-  } catch(e) {}
+  } catch(e) { showToast('오프라인: 로컬 데이터 사용 중'); }
   render();
 }
 
-// 날짜
 document.getElementById('header-date').textContent =
-  new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' });
+  new Date().toLocaleDateString('ko-KR', { year:'numeric', month:'long', day:'numeric', weekday:'short' });
 
-// 토스트
+// ── 토스트 ──
 let toastTimer;
 function showToast(msg) {
   const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.style.display = 'block';
+  el.textContent = msg; el.style.display = 'block';
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => el.style.display = 'none', 2000);
 }
 
-// 시트
+// ── 시트 ──
 function openSheet() {
   document.getElementById('overlay').style.display = 'block';
   document.getElementById('add-sheet').style.display = 'block';
@@ -372,17 +326,23 @@ function closeSheet() {
   document.getElementById('new-link').value = '';
 }
 
-// 추가
+// ── CRUD ──
 function addItem() {
   const name = document.getElementById('new-name').value.trim();
   if (!name) return;
-  const link = document.getElementById('new-link').value.trim();
-  items.push({ id: Date.now(), name, link, status: '구매요', logs: [{ status: '구매요', date: fmt() }] });
+  let link = document.getElementById('new-link').value.trim();
+  if (link && !/^https?:\/\//i.test(link)) link = 'https://' + link;
+  items.push({ id: Date.now(), name, link, status:'구매요', logs:[{ status:'구매요', date:fmt() }] });
   save(); render(); closeSheet(); showToast('추가됐어요');
 }
-
-// 토글
+function deleteItem(id) {
+  items = items.filter(i => i.id !== id);
+  selected.delete(id);
+  if (expandedLog === id) expandedLog = null;
+  save(); render(); showToast('삭제됐어요');
+}
 function toggleItem(id) {
+  if (selectMode) { toggleSelect(id); return; }
   const item = items.find(i => i.id === id);
   if (!item) return;
   item.status = item.status === '구매요' ? '구매완' : '구매요';
@@ -390,51 +350,14 @@ function toggleItem(id) {
   save(); render();
 }
 
-// 삭제
-function deleteItem(id) {
-  items = items.filter(i => i.id !== id);
-  if (expandedLog === id) expandedLog = null;
-  save(); render(); showToast('삭제됐어요');
-}
-
-// 로그 토글
-function toggleLog(id) {
-  expandedLog = expandedLog === id ? null : id;
-  render();
-}
-
-// 링크 수정 모드
-function startEditLink(id) {
-  editingLink = id;
-  render();
-  setTimeout(() => {
-    const el = document.getElementById('link-input-' + id);
-    if (el) el.focus();
-  }, 50);
-}
-function cancelEditLink() { editingLink = null; render(); }
-function saveLink(id) {
-  let val = document.getElementById('link-input-' + id).value.trim();
-  if (val && !/^https?:\/\//i.test(val)) val = 'https://' + val;
-  const item = items.find(i => i.id === id);
-  if (item) item.link = val;
-  editingLink = null;
-  save(); render(); showToast('저장됐어요');
-}
-
-
-// 이름 편집
+// ── 이름 편집 ──
 function startEditName(id) {
-  editingName = id;
-  render();
-  setTimeout(() => {
-    const el = document.getElementById('name-input-' + id);
-    if (el) { el.focus(); el.select(); }
-  }, 50);
+  editingName = id; render();
+  setTimeout(() => { const el = document.getElementById('name-input-'+id); if (el) { el.focus(); el.select(); } }, 50);
 }
 function cancelEditName() { editingName = null; render(); }
 function saveName(id) {
-  const val = document.getElementById('name-input-' + id).value.trim();
+  const val = document.getElementById('name-input-'+id).value.trim();
   if (!val) return;
   const item = items.find(i => i.id === id);
   if (item) item.name = val;
@@ -442,53 +365,157 @@ function saveName(id) {
   save(); render(); showToast('수정됐어요');
 }
 
-// 드래그 순서 변경
+// ── 링크 편집 ──
+function startEditLink(id) {
+  editingLink = id; render();
+  setTimeout(() => { const el = document.getElementById('link-input-'+id); if (el) el.focus(); }, 50);
+}
+function cancelEditLink() { editingLink = null; render(); }
+function saveLink(id) {
+  let val = document.getElementById('link-input-'+id).value.trim();
+  if (val && !/^https?:\/\//i.test(val)) val = 'https://' + val;
+  const item = items.find(i => i.id === id);
+  if (item) item.link = val;
+  editingLink = null;
+  save(); render(); showToast('저장됐어요');
+}
+
+// ── 로그 ──
+function toggleLog(id) { expandedLog = expandedLog === id ? null : id; render(); }
+function confirmResetAllLogs() {
+  if (!confirm('모든 항목의 변경 이력을 초기화할까요?')) return;
+  items.forEach(i => { i.logs = []; });
+  expandedLog = null;
+  save(); render(); showToast('전체 이력 초기화됐어요');
+}
+function clearItemLog(id) {
+  const item = items.find(i => i.id === id);
+  if (!item || !confirm('"' + item.name + '"의 이력을 초기화할까요?')) return;
+  item.logs = [];
+  save(); render(); showToast('이력 초기화됐어요');
+}
+
+// ── 다중 선택 ──
+function toggleSelectMode() {
+  selectMode = !selectMode;
+  selected.clear();
+  document.body.classList.toggle('select-mode', selectMode);
+  const btn = document.getElementById('select-btn');
+  btn.classList.toggle('on', selectMode);
+  btn.textContent = selectMode ? '완료' : '선택';
+  document.getElementById('multi-actions').classList.remove('visible');
+  render();
+}
+function toggleSelect(id) {
+  if (selected.has(id)) selected.delete(id); else selected.add(id);
+  const n = selected.size;
+  document.getElementById('selected-count').textContent = n + '개 선택';
+  document.getElementById('multi-actions').classList.toggle('visible', n > 0);
+  render();
+}
+function deleteSelected() {
+  if (!selected.size || !confirm(selected.size + '개 항목을 삭제할까요?')) return;
+  items = items.filter(i => !selected.has(i.id));
+  selected.clear();
+  document.getElementById('multi-actions').classList.remove('visible');
+  save(); render(); showToast('삭제됐어요');
+}
+function openMoveModal() {
+  if (!selected.size) return;
+  document.getElementById('move-modal-desc').textContent = selected.size + '개 항목을 어디로 이동할까요?';
+  document.getElementById('move-modal').classList.add('visible');
+}
+function closeMoveModal() { document.getElementById('move-modal').classList.remove('visible'); }
+function moveSelected(status) {
+  items.forEach(item => {
+    if (selected.has(item.id) && item.status !== status) {
+      item.status = status;
+      item.logs.push({ status, date: fmt() });
+    }
+  });
+  selected.clear();
+  document.getElementById('multi-actions').classList.remove('visible');
+  closeMoveModal();
+  save(); render(); showToast('이동됐어요');
+}
+
+
+// ── 다중선택 순서 이동 ──
+function moveSelectedUp() {
+  if (!selected.size) return;
+  const ids = [...selected];
+  // 각 status 그룹 내에서 위로 이동
+  ['구매요', '구매완'].forEach(status => {
+    const group = items.filter(i => i.status === status);
+    const selInGroup = group.filter(i => selected.has(i.id));
+    if (!selInGroup.length) return;
+    // 그룹의 첫 번째가 선택돼 있으면 이동 불가
+    if (selected.has(group[0].id)) return;
+    for (let i = 1; i < group.length; i++) {
+      if (selected.has(group[i].id)) {
+        // items 배열 내 실제 인덱스 찾아서 교환
+        const realIdx = items.findIndex(it => it.id === group[i].id);
+        const prevIdx = items.findIndex(it => it.id === group[i-1].id);
+        if (realIdx !== -1 && prevIdx !== -1) {
+          [items[realIdx], items[prevIdx]] = [items[prevIdx], items[realIdx]];
+        }
+      }
+    }
+  });
+  save(); render(); showToast('위로 이동됐어요');
+}
+
+function moveSelectedDown() {
+  if (!selected.size) return;
+  ['구매요', '구매완'].forEach(status => {
+    const group = items.filter(i => i.status === status);
+    if (!group.length) return;
+    if (selected.has(group[group.length-1].id)) return;
+    for (let i = group.length - 2; i >= 0; i--) {
+      if (selected.has(group[i].id)) {
+        const realIdx = items.findIndex(it => it.id === group[i].id);
+        const nextIdx = items.findIndex(it => it.id === group[i+1].id);
+        if (realIdx !== -1 && nextIdx !== -1) {
+          [items[realIdx], items[nextIdx]] = [items[nextIdx], items[realIdx]];
+        }
+      }
+    }
+  });
+  save(); render(); showToast('아래로 이동됐어요');
+}
+
+// ── 드래그 ──
 function onDragStart(e, id) {
-  dragSrcId = id;
-  e.dataTransfer.effectAllowed = 'move';
-  setTimeout(() => {
-    const el = document.querySelector('[data-id="' + id + '"]');
-    if (el) el.classList.add('dragging');
-  }, 0);
+  if (selectMode) return;
+  dragSrcId = id; e.dataTransfer.effectAllowed = 'move';
+  setTimeout(() => { const el = document.querySelector('[data-id="'+id+'"]'); if (el) el.classList.add('dragging'); }, 0);
 }
 function onDragOver(e, id) {
   e.preventDefault();
   document.querySelectorAll('.item-row').forEach(r => r.classList.remove('drag-over'));
-  if (dragSrcId !== id) {
-    const el = document.querySelector('[data-id="' + id + '"]');
-    if (el) el.classList.add('drag-over');
-  }
+  if (dragSrcId !== id) { const el = document.querySelector('[data-id="'+id+'"]'); if (el) el.classList.add('drag-over'); }
 }
-function onDragEnd() {
-  document.querySelectorAll('.item-row').forEach(r => {
-    r.classList.remove('dragging');
-    r.classList.remove('drag-over');
-  });
-}
-function onDrop(e, targetId) {
+function onDragEnd() { document.querySelectorAll('.item-row').forEach(r => { r.classList.remove('dragging'); r.classList.remove('drag-over'); }); }
+function onDrop(e, tid) {
   e.preventDefault();
-  if (dragSrcId === null || dragSrcId === targetId) return;
-  const srcIdx = items.findIndex(i => i.id === dragSrcId);
-  const tgtIdx = items.findIndex(i => i.id === targetId);
-  if (srcIdx === -1 || tgtIdx === -1) return;
-  const moved = items.splice(srcIdx, 1)[0];
-  items.splice(tgtIdx, 0, moved);
-  dragSrcId = null;
-  save(); render();
+  if (dragSrcId === null || dragSrcId === tid) return;
+  const si = items.findIndex(i => i.id === dragSrcId);
+  const ti = items.findIndex(i => i.id === tid);
+  if (si === -1 || ti === -1) return;
+  items.splice(ti, 0, items.splice(si, 1)[0]);
+  dragSrcId = null; save(); render();
 }
 
-// 터치 드래그 (모바일)
-let touchDragId = null;
-let touchClone = null;
-let touchStartY = 0;
-
+// 터치 드래그
+let touchDragId = null, touchClone = null, touchStartY = 0;
 function onTouchStart(e, id) {
-  touchDragId = id;
-  touchStartY = e.touches[0].clientY;
-  const el = document.querySelector('[data-id="' + id + '"]');
+  if (selectMode) return;
+  touchDragId = id; touchStartY = e.touches[0].clientY;
+  const el = document.querySelector('[data-id="'+id+'"]');
   if (!el) return;
   touchClone = el.cloneNode(true);
-  touchClone.style.cssText = 'position:fixed;left:' + el.getBoundingClientRect().left + 'px;top:' + el.getBoundingClientRect().top + 'px;width:' + el.offsetWidth + 'px;opacity:0.85;z-index:9999;background:#fff;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,0.18);pointer-events:none;';
+  const r = el.getBoundingClientRect();
+  touchClone.style.cssText = 'position:fixed;left:'+r.left+'px;top:'+r.top+'px;width:'+el.offsetWidth+'px;opacity:0.85;z-index:9999;background:#fff;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,0.18);pointer-events:none;';
   document.body.appendChild(touchClone);
   el.style.opacity = '0.3';
 }
@@ -501,74 +528,185 @@ function onTouchMove(e) {
 }
 function onTouchEnd(e) {
   if (!touchClone || touchDragId === null) return;
-  const x = e.changedTouches[0].clientX;
   const y = e.changedTouches[0].clientY;
-  touchClone.remove();
-  touchClone = null;
-  const srcEl = document.querySelector('[data-id="' + touchDragId + '"]');
+  touchClone.remove(); touchClone = null;
+  const srcEl = document.querySelector('[data-id="'+touchDragId+'"]');
   if (srcEl) srcEl.style.opacity = '';
-  const rows = document.querySelectorAll('.item-row[data-id]');
-  let targetId = null;
-  rows.forEach(row => {
-    const rect = row.getBoundingClientRect();
-    if (y >= rect.top && y <= rect.bottom && parseInt(row.dataset.id) !== touchDragId) {
-      targetId = parseInt(row.dataset.id);
-    }
+  let tid = null;
+  document.querySelectorAll('.item-row[data-id]').forEach(row => {
+    const rc = row.getBoundingClientRect();
+    if (y >= rc.top && y <= rc.bottom && parseInt(row.dataset.id) !== touchDragId) tid = parseInt(row.dataset.id);
   });
-  if (targetId !== null) {
-    const srcIdx = items.findIndex(i => i.id === touchDragId);
-    const tgtIdx = items.findIndex(i => i.id === targetId);
-    if (srcIdx !== -1 && tgtIdx !== -1) {
-      const moved = items.splice(srcIdx, 1)[0];
-      items.splice(tgtIdx, 0, moved);
-      save(); render();
-    }
+  if (tid !== null) {
+    const si = items.findIndex(i => i.id === touchDragId);
+    const ti = items.findIndex(i => i.id === tid);
+    if (si !== -1 && ti !== -1) { items.splice(ti, 0, items.splice(si,1)[0]); save(); render(); }
   }
   touchDragId = null;
 }
 document.addEventListener('touchmove', onTouchMove, { passive: false });
 document.addEventListener('touchend', onTouchEnd);
 
-// 렌더
-function render() {
-  const buy = items.filter(i => i.status === '구매요');
-  const done = items.filter(i => i.status === '구매완');
+// ── 렌더 ──
+function isDesktop() { return window.innerWidth >= 700; }
 
-  document.getElementById('chip-buy').textContent = '구매요 ' + buy.length;
+function render() {
+  const buy  = items.filter(i => i.status === '구매요');
+  const done = items.filter(i => i.status === '구매완');
+  document.getElementById('chip-buy').textContent  = '구매요 ' + buy.length;
   document.getElementById('chip-done').textContent = '구매완 ' + done.length;
-  document.getElementById('count-buy').textContent = buy.length;
+  document.getElementById('count-buy').textContent  = buy.length;
   document.getElementById('count-done').textContent = done.length;
 
-  document.getElementById('list-buy').innerHTML = renderList(buy);
-  document.getElementById('list-done').innerHTML = renderList(done);
+  if (isDesktop()) {
+    // 4컬럼 카드 그리드
+    document.getElementById('list-buy-grid').innerHTML  = renderGrid(buy);
+    document.getElementById('list-done-grid').innerHTML = renderGrid(done);
+    document.getElementById('list-buy-grid').style.display  = '';
+    document.getElementById('list-done-grid').style.display = '';
+  } else {
+    // 모바일 1열 리스트
+    document.getElementById('list-buy-grid').innerHTML  = '';
+    document.getElementById('list-done-grid').innerHTML = '';
+    document.getElementById('list-buy-grid').style.display  = 'none';
+    document.getElementById('list-done-grid').style.display = 'none';
+    // 모바일용 hidden div에 렌더 후 section-wrap으로 옮기기
+    // 대신 직접 section-col 안에 렌더
+    renderMobile(buy, 'section-buy');
+    renderMobile(done, 'section-done');
+  }
 }
 
+function renderMobile(list, sectionId) {
+  const section = document.getElementById(sectionId);
+  let wrap = section.querySelector('.section-wrap-mobile');
+  if (!wrap) {
+    wrap = document.createElement('div');
+    wrap.className = 'section-wrap section-wrap-mobile';
+    section.appendChild(wrap);
+  }
+  wrap.innerHTML = list.length === 0 ? '<div class="empty">항목 없음</div>'
+    : list.map((item, i) => renderItem(item, i === list.length-1)).join('');
+}
+
+function renderGrid(list) {
+  if (!list.length) return '<div class="section-wrap" style="grid-column:1/-1"><div class="empty">항목 없음</div></div>';
+  return list.map(item => renderCard(item)).join('');
+}
+
+function renderCard(item) {
+  const done       = item.status === '구매완';
+  const color      = done ? '#34c759' : '#ff9500';
+  const thumbLeft  = done ? '23px' : '3px';
+  const isSel      = selected.has(item.id);
+  const isEditName = editingName === item.id;
+
+  const cbHtml = `<div class="select-cb ${isSel?'checked':''}" onclick="toggleSelect(${item.id})">${isSel?'✓':''}</div>`;
+
+  const nameHtml = isEditName
+    ? `<input id="name-input-${item.id}" class="name-edit-input" style="width:100%;margin-bottom:6px" value="${item.name.replace(/"/g,'&quot;')}"
+         onkeydown="if(event.key==='Enter')saveName(${item.id});if(event.key==='Escape')cancelEditName()" />`
+    : `<div class="card-name ${done?'done':''}" ondblclick="startEditName(${item.id})">${item.name}</div>`;
+
+  const linkHtml = item.link
+    ? `<a href="${item.link}" class="link-btn" style="font-size:11px;padding:3px 8px">링크</a>`
+    : `<button class="link-add-btn" style="font-size:11px;padding:3px 8px" onclick="startEditLink(${item.id})">+ 링크</button>`;
+
+  const saveRow = isEditName
+    ? `<div style="display:flex;gap:6px;margin-top:4px">
+        <button class="name-save-btn" onclick="saveName(${item.id})">저장</button>
+        <button class="name-cancel-btn" onclick="cancelEditName()">취소</button>
+       </div>` : '';
+
+  const editLinkRow = editingLink === item.id
+    ? `<div class="link-input-row" style="padding:6px 0 0;gap:6px">
+        <input id="link-input-${item.id}" class="inp-sm" value="${item.link||''}" placeholder="https://..." onkeydown="if(event.key==='Enter')saveLink(${item.id})" />
+        <button class="btn-sm-black" onclick="saveLink(${item.id})">저장</button>
+        <button class="btn-sm-gray" onclick="cancelEditLink()">취소</button>
+       </div>` : (item.link ? `<div style="padding-top:2px"><button class="link-edit-small" onclick="startEditLink(${item.id})">링크 수정</button></div>` : '');
+
+  return `<div class="section-wrap card-item ${isSel?'selected':''}" data-id="${item.id}"
+    draggable="true"
+    ondragstart="onDragStart(event,${item.id})"
+    ondragover="onDragOver(event,${item.id})"
+    ondragend="onDragEnd()"
+    ondrop="onDrop(event,${item.id})"
+    style="padding:14px 14px 12px;cursor:default;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      ${cbHtml}
+      <span class="drag-handle" style="margin-left:2px" ontouchstart="onTouchStart(event,${item.id})">⠿</span>
+      <div style="flex:1"></div>
+      <button class="del-btn" onclick="deleteItem(${item.id})">×</button>
+    </div>
+    <button class="toggle" style="background:${color};margin-bottom:10px" onclick="toggleItem(${item.id})">
+      <div class="toggle-thumb" style="left:${thumbLeft}"></div>
+    </button>
+    ${nameHtml}
+    ${saveRow}
+    <div style="margin-top:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+      ${isEditName ? '' : linkHtml}
+      <button class="log-toggle-btn" style="margin-left:auto" onclick="toggleCardLog(${item.id})">이력</button>
+    </div>
+    ${editLinkRow}
+    ${expandedLog === item.id ? renderLogContent(item) : ''}
+  </div>`;
+}
+
+function renderLogContent(item) {
+  const rows = [...(item.logs||[])].reverse().map(log => {
+    const c = log.status === '구매완' ? '#34c759' : '#ff9500';
+    return `<div class="log-row"><span style="font-weight:600;color:${c}">${log.status}</span><span style="color:#8e8e93">${log.date}</span></div>`;
+  }).join('') || '<div style="font-size:13px;color:#c7c7cc">기록 없음</div>';
+  return `<div class="log-section" style="margin:8px -14px -12px;border-radius:0 0 14px 14px">
+    <div class="log-header"><span class="log-title">변경 이력</span>
+    <button class="log-clear-btn" onclick="clearItemLog(${item.id})">초기화</button></div>
+    ${rows}
+  </div>`;
+}
+
+function toggleCardLog(id) { expandedLog = expandedLog === id ? null : id; render(); }
+
+
+
 function renderList(list) {
-  if (list.length === 0) return '<div class="empty">항목 없음</div>';
+  if (!list.length) return '<div class="empty">항목 없음</div>';
   return list.map((item, i) => renderItem(item, i === list.length - 1)).join('');
 }
 
 function renderItem(item, isLast) {
-  const done = item.status === '구매완';
-  const color = done ? '#34c759' : '#ff9500';
-  const thumbLeft = done ? '23px' : '3px';
+  const done       = item.status === '구매완';
+  const color      = done ? '#34c759' : '#ff9500';
+  const thumbLeft  = done ? '23px' : '3px';
   const isExpanded = expandedLog === item.id;
-  const isEditing = editingLink === item.id;
+  const isEditing  = editingLink === item.id;
+  const isEditName = editingName === item.id;
+  const isSel      = selected.has(item.id);
+
+  const cbHtml = `<div class="select-cb ${isSel?'checked':''}" onclick="toggleSelect(${item.id})">${isSel?'✓':''}</div>`;
+
+  const nameHtml = isEditName
+    ? `<input id="name-input-${item.id}" class="name-edit-input" value="${item.name.replace(/"/g,'&quot;')}"
+         onkeydown="if(event.key==='Enter')saveName(${item.id});if(event.key==='Escape')cancelEditName()" />`
+    : `<span class="item-name ${done?'done':''}" ondblclick="startEditName(${item.id})">${item.name}</span>`;
 
   let linkHtml = '';
-  if (item.link && !isEditing) {
-    linkHtml = `<a href="${item.link}" class="link-btn">링크</a>`;
-  } else if (!item.link && !isEditing) {
-    linkHtml = `<button class="link-add-btn" onclick="startEditLink(${item.id})">+ 링크</button>`;
+  if (!isEditName) {
+    if (item.link && !isEditing)      linkHtml = `<a href="${item.link}" class="link-btn">링크</a>`;
+    else if (!item.link && !isEditing) linkHtml = `<button class="link-add-btn" onclick="startEditLink(${item.id})">+ 링크</button>`;
   }
 
+  const actionsHtml = isEditName
+    ? `<button class="name-save-btn" onclick="saveName(${item.id})">저장</button>
+       <button class="name-cancel-btn" onclick="cancelEditName()">취소</button>`
+    : `${linkHtml}
+       <button class="log-toggle-btn" onclick="toggleLog(${item.id})">${isExpanded?'▲':'▼'}</button>
+       <button class="del-btn" onclick="deleteItem(${item.id})">×</button>`;
+
   let linkEditRow = '';
-  if (item.link && !isEditing) {
-    linkEditRow = `<div class="link-edit-row"><button class="link-edit-small" onclick="startEditLink(${item.id})">링크 수정</button></div>`;
-  }
-  if (isEditing) {
-    linkEditRow = `<div class="link-input-row">
-      <input id="link-input-${item.id}" class="inp-sm" value="${item.link || ''}" placeholder="https://..." onkeydown="if(event.key==='Enter')saveLink(${item.id})" />
+  if (!isEditName) {
+    if (item.link && !isEditing) linkEditRow = `<div class="link-edit-row"><button class="link-edit-small" onclick="startEditLink(${item.id})">링크 수정</button></div>`;
+    if (isEditing) linkEditRow = `<div class="link-input-row">
+      <input id="link-input-${item.id}" class="inp-sm" value="${item.link||''}" placeholder="https://..." onkeydown="if(event.key==='Enter')saveLink(${item.id})" />
       <button class="btn-sm-black" onclick="saveLink(${item.id})">저장</button>
       <button class="btn-sm-gray" onclick="cancelEditLink()">취소</button>
     </div>`;
@@ -576,52 +714,42 @@ function renderItem(item, isLast) {
 
   let logHtml = '';
   if (isExpanded) {
-    const rows = [...(item.logs || [])].reverse().map(log => {
+    const rows = [...(item.logs||[])].reverse().map(log => {
       const c = log.status === '구매완' ? '#34c759' : '#ff9500';
       return `<div class="log-row"><span style="font-weight:600;color:${c}">${log.status}</span><span style="color:#8e8e93">${log.date}</span></div>`;
     }).join('') || '<div style="font-size:13px;color:#c7c7cc">기록 없음</div>';
-    logHtml = `<div class="log-section"><div class="log-title">변경 이력</div>${rows}</div>`;
+    logHtml = `<div class="log-section">
+      <div class="log-header">
+        <span class="log-title">변경 이력</span>
+        <button class="log-clear-btn" onclick="clearItemLog(${item.id})">초기화</button>
+      </div>
+      ${rows}
+    </div>`;
   }
 
-  const isEditingName = editingName === item.id;
-  const nameHtml = isEditingName
-    ? `<input id="name-input-${item.id}" class="name-edit-input" value="${item.name.replace(/"/g, '&quot;')}"
-        onkeydown="if(event.key==='Enter')saveName(${item.id});if(event.key==='Escape')cancelEditName()" />`
-    : `<span class="item-name ${done ? 'done' : ''}" ondblclick="startEditName(${item.id})">${item.name}</span>`;
-
-  const nameActions = isEditingName
-    ? `<button class="name-save-btn" onclick="saveName(${item.id})">저장</button>
-       <button class="name-cancel-btn" onclick="cancelEditName()">취소</button>`
-    : `${linkHtml}
-       <button class="log-toggle-btn" onclick="toggleLog(${item.id})">${isExpanded ? '▲' : '▼'}</button>
-       <button class="del-btn" onclick="deleteItem(${item.id})">×</button>`;
-
-  return `
-    <div class="item-row" data-id="${item.id}" style="${isLast ? 'border-bottom:none' : ''}"
-      draggable="true"
-      ondragstart="onDragStart(event,${item.id})"
-      ondragover="onDragOver(event,${item.id})"
-      ondragend="onDragEnd()"
-      ondrop="onDrop(event,${item.id})">
-      <div class="item-main">
-        <span class="drag-handle"
-          ontouchstart="onTouchStart(event,${item.id})">⠿</span>
-        <button class="toggle" style="background:${color}" onclick="toggleItem(${item.id})">
-          <div class="toggle-thumb" style="left:${thumbLeft}"></div>
-        </button>
-        ${nameHtml}
-        ${nameActions}
-      </div>
-      ${isEditingName ? '' : linkEditRow}
-      ${logHtml}
-    </div>`;
+  return `<div class="item-row ${isSel?'selected':''}" data-id="${item.id}" style="${isLast?'border-bottom:none':''}"
+    draggable="true"
+    ondragstart="onDragStart(event,${item.id})"
+    ondragover="onDragOver(event,${item.id})"
+    ondragend="onDragEnd()"
+    ondrop="onDrop(event,${item.id})">
+    <div class="item-main">
+      ${cbHtml}
+      <span class="drag-handle" ontouchstart="onTouchStart(event,${item.id})">⠿</span>
+      <button class="toggle" style="background:${color}" onclick="toggleItem(${item.id})">
+        <div class="toggle-thumb" style="left:${thumbLeft}"></div>
+      </button>
+      ${nameHtml}
+      ${actionsHtml}
+    </div>
+    ${linkEditRow}
+    ${logHtml}
+  </div>`;
 }
 
-// 엔터키
-document.getElementById('new-name').addEventListener('keydown', e => { if (e.key === 'Enter') addItem(); });
-document.getElementById('new-link').addEventListener('keydown', e => { if (e.key === 'Enter') addItem(); });
+document.getElementById('new-name').addEventListener('keydown', e => { if (e.key==='Enter') addItem(); });
+document.getElementById('new-link').addEventListener('keydown', e => { if (e.key==='Enter') addItem(); });
 
-// 구글 시트에서 최신 데이터 불러오기
 loadFromSheet();
 </script>
 </body>
