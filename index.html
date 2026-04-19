@@ -283,8 +283,35 @@ let items = loadItems();
 let expandedLog = null;
 let editingLink = null;
 
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbytCE0IL6jL425_u_RpFquvsgVz-fzdPMHftvBrwU6hI1lXTA6Erz7DO_MXz5rtqz82OA/exec';
+
 function save() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); } catch {}
+  syncToSheet();
+}
+
+async function syncToSheet() {
+  try {
+    await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'set', data: JSON.stringify(items) }),
+    });
+  } catch(e) {}
+}
+
+async function loadFromSheet() {
+  try {
+    const res = await fetch(GAS_URL + '?action=get');
+    const text = await res.text();
+    if (text && text !== '[]') {
+      const remote = JSON.parse(text);
+      if (remote.length > 0) {
+        items = remote;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+      }
+    }
+  } catch(e) {}
+  render();
 }
 
 // 날짜
@@ -440,7 +467,8 @@ function renderItem(item, isLast) {
 document.getElementById('new-name').addEventListener('keydown', e => { if (e.key === 'Enter') addItem(); });
 document.getElementById('new-link').addEventListener('keydown', e => { if (e.key === 'Enter') addItem(); });
 
-render();
+// 구글 시트에서 최신 데이터 불러오기
+loadFromSheet();
 </script>
 </body>
 </html>
